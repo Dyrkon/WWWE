@@ -47,9 +47,8 @@ def find_price(item_name, quant):
     try:
         r = requests.get(f"https://www.rohlik.cz/hledat/{item_name}?companyId=1")
         soup = BeautifulSoup(r.content, "lxml")
-        price_per_part = soup.find("div", class_="pricePerOffer pricePer").text.strip(' Kč/kg').replace(',', '.')
-        price_total = float(price_per_part) * quant
-        return round(price_total, 2)
+        return round(
+            float(soup.find("div", class_="pricePerOffer pricePer").text.strip(' Kč/kg').replace(',', '.')) * quant, 2)
 
     except:
         unfound_list.append(item_name)
