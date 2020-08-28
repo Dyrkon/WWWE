@@ -1,8 +1,8 @@
 import re
 from collections import namedtuple
+
 import requests
 from bs4 import BeautifulSoup
-#from . import values
 
 cbookquery_n = 'https://www.recepty.cz/vyhledavani/pokrocile?showResults=1&rating=3&mess=2&catalog%5B0%5D=541&catalog' \
                '%5B1%5D=543&catalog%5B2%5D=544&catalog%5B3%5D=545&catalog%5B4%5D=542&catalog%5B5%5D=546&catalog%5B6' \
