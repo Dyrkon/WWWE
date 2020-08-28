@@ -1,4 +1,5 @@
 import re
+import timeit
 from collections import namedtuple
 
 import requests
@@ -10,23 +11,21 @@ from food_variables import *
 def get_links():
     link_list = []
     r = requests.get(cbookquery_n)
-    soup = BeautifulSoup(r.content, "lxml")
+    soup = BeautifulSoup(r.content, "html.parser")
 
     recipies = soup.find_all('a', class_='loading-placeholder', href=True)
     for rec in recipies:
         link_list.append(base_web + rec.get("href"))
     return link_list
 
-
 def get_ingrediencts(in_link):
     ingredients = []
     r = requests.get(in_link)
-    soup = BeautifulSoup(r.content, "lxml")
+    soup = BeautifulSoup(r.content, "html.parser")
     ings = soup.find_all("div", class_='ingredient-assignment__desc')
     for ing in ings:
         ingredients.append(ing_parse(ing.text).strip())
     return ingredients
-
 
 def ing_parse(string):
     output = ""
@@ -42,18 +41,23 @@ def ing_parse(string):
             continue
     return output
 
-
 def find_price(item_name, quant):
     try:
         r = requests.get(f"https://www.rohlik.cz/hledat/{item_name}?companyId=1")
-        soup = BeautifulSoup(r.content, "lxml")
-        return round(
-            float(soup.find("div", class_="pricePerOffer pricePer").text.strip(' Kč/kg').replace(',', '.')) * quant, 2)
+        soup = BeautifulSoup(r.content, "html.parser")
+        raw_price = soup.find("div", class_="pricePerOffer pricePer").text.replace(',', '.')
+        try:
+            price = ''.join(re.findall(r'\d+\.\d+', raw_price))
+            price = float(price)
+        except AttributeError:
+            raise AttributeError
 
-    except:
+        return price * float(quant)
+    except AttributeError:
         unfound_list.append(item_name)
 
-def quant_multiply(quant, amount):
+
+def multiply_quant(quant, amount):
     bruh = 0
     for i in quant:
         bruh = float(i)
@@ -63,8 +67,25 @@ def quant_multiply(quant, amount):
 
 def get_name(food_link):
     r = requests.get(food_link)
-    soup = BeautifulSoup(r.content, "lxml")
+    soup = BeautifulSoup(r.content, "html.parser")
     return soup.find('h1', class_='recipe-title-box__title', text=True).text
+
+
+def get_quant(string):
+    if '.' in string:
+        if (out := '.'.join(re.findall(r'\d+\.\d+', string))) != '':
+            return float(out)
+    else:
+        if (out := ''.join(re.findall(r'\d+', string))) != '':
+            return float(out)
+
+
+def does_contain(contains, string):
+    con = r'\b' + contains + r'\b'
+    if re.findall(con, string):
+        return True
+    else:
+        return False
 
 
 def get_price(ingredients_link):
@@ -75,40 +96,40 @@ def get_price(ingredients_link):
     price = 0
     price_total = 0
     for ing in ingrediencs:
-        if ',' in ing:
-            quantity = re.findall(r'\d+\.\d+', ing)
-        else:
-            quantity = re.findall(r'\d+', ing)
+        if does_contain(',', ing):
+            ing = ing.replace(',', '.', 1)
+        quantity = get_quant(ing)
         if quantity:
-            if ' ks ' in ing:
-                ing_to_search = str(ing).strip(str(quantity) + ' ks ')
+            if does_contain('ks', ing):
+                ing_to_search = str(ing).replace(str(int(quantity)) + '  ks ', "", 1)
                 price = find_price(ing_to_search, quantity)
-            elif ' ml' in ing:
-                ing_to_search = str(ing).strip(str(quantity) + ' ml ')
-                price = find_price(ing_to_search,quant_multiply(quantity, 0.001))
-            elif ' lžička' in ing:
-                ing_to_search = str(ing).strip(str(quantity) + ' lžička ')
-                price = find_price(ing_to_search, quant_multiply(quantity, 0.006))
-            elif ' lžíce ' in ing:
-                ing_to_search = str(ing).strip(str(quantity) + ' lžíce ')
-                price = find_price(ing_to_search, quant_multiply(quantity, 0.006))
-            elif ' dl ' in ing:
-                ing_to_search = str(ing).strip(str(quantity) + ' dl ')
-                price = find_price(ing_to_search, quant_multiply(quantity, 10))
-            elif ' stroužek ' in ing:
-                ing_to_search = str(ing).strip(str(quantity) + ' stroužek ')
-                price = find_price(ing_to_search, quant_multiply(quantity, 0.02))
-            elif '  g ' in ing:
-                ing_to_search = str(ing).strip(str(quantity) + '  g ')
-                price = find_price(ing_to_search, quant_multiply(quantity, 0.001))
-            elif ' l ' in ing:
-                ing_to_search = str(ing).strip(str(quantity) + ' l ')
-                price = find_price(ing_to_search, quant_multiply(quantity, 1))
+            elif does_contain('g', ing):
+                ing_to_search = str(ing).replace(str(int(quantity)) + '  g ', "", 1)
+                price = find_price(ing_to_search, quantity * 0.001)
+            elif does_contain('ml', ing):
+                ing_to_search = str(ing).replace(str(int(quantity)) + '  ml ', "", 1)
+                price = find_price(ing_to_search, quantity * 0.001)
+            elif does_contain('lžička', ing):
+                ing_to_search = str(ing).replace(str(int(quantity)) + '  lžička ', "", 1)
+                price = find_price(ing_to_search, quantity * 0.006)
+            elif does_contain('lžíce', ing):
+                ing_to_search = str(ing).replace(str(int(quantity)) + '  lžíce ', "", 1)
+                price = find_price(ing_to_search, quantity * 0.006)
+            elif does_contain('dl', ing):
+                ing_to_search = str(ing).replace(str(int(quantity)) + '  dl ', "", 1)
+                price = find_price(ing_to_search, quantity * 10)
+            elif does_contain('stroužek', ing):
+                ing_to_search = str(ing).replace(str(int(quantity)) + '  stroužek ', "", 1)
+                price = find_price(ing_to_search, quantity * 0.02)
+            elif does_contain('l', ing):
+                ing_to_search = str(ing).replace(str(int(quantity)) + '  l ', "", 1)
+                price = find_price(ing_to_search, quantity * 1)
             else:
                 continue
+
         else:
             ing_to_search = str(ing)
-            price = find_price(ing_to_search, 0.3)
+            price = find_price(ing_to_search, 1)
 
         if ing_to_search is not None and not []:
             ingredienc_output.append(ing_to_search)
@@ -120,17 +141,22 @@ def get_price(ingredients_link):
             ingredienc_output.remove(ing_o)
 
     jidlo = namedtuple("jidlo", ["ingredints", "price", "name", 'link', "unfound_list"])
-    return jidlo(ingredienc_output, price_total, food_name, ingredients_link, unfound_list)
+    return jidlo(', '.join(ingredienc_output), round(price_total), food_name, ingredients_link, ', '.join(unfound_list))
 
 
-for link in get_links():
+def run(link):
     polozka = get_price(link)
     print('Jmeno: ' + polozka.name)
-    print('Ingredience: ' + str(polozka.ingredints))
-    #print(polozka.ingredints)
+    print('Ingredience: ' + polozka.ingredints)
+    # print(polozka.ingredints)
     print("Cena: " + str(polozka.price) + 'Kč')
-    #print(polozka.cena)
+    # print(polozka.cena)
     print('Nenalezene položky: ')
     if unfound_list:
         print(unfound_list)
     print(polozka.link)
+    return 1
+
+
+print(timeit.timeit('run("https://www.recepty.cz//recept/kureci-kousky-v-syrovem-testicku-2435")',
+                    'from __main__ import run', number=3))

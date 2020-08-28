@@ -1,10 +1,17 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>$Title$</title>
+    <title>Co budeme jíst</title>
+    <link href="{% static 'CSS/Style.css' %}" rel="stylesheet" type="text/css">
+    {% block head %}
+    replaced code here
+    {% endblock %}
 </head>
 <body>
-$END$
+{% block content %}
+replaced code here
+{% endblock %}
 </body>
 </html>
