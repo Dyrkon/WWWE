@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block content %}
+    <div id="content-main">
+        <h1 class="page_name">Co si dnes dáme?</h1>
+        <div id="content">
+            <div class="food_print">
+                <div class="food_name">
+                <p><strong>Jmeno jidla:</strong> {{ name }}</p>
+                </div>
+                <div class="food_ingredients">
+                <p><strong>Ingredience jídla:</strong> {{ ingredints }}</p>
+                </div>
+                <div class="unfound_list">
+                <p><strong>Nenalezené ingredience:</strong> {{ unfound_list }}</p>
+                </div>
+                <div class="food_price">
+                <p><strong>Cena jidla:</strong> {{ price }} <strong>Kč</strong></p>
+                </div>
+                <div class="food_link">
+                <a href={{ link }} target="_blank">Odkaz na jidlo</a>
+                </div>
+            </div>
+        </div>
+        <p></p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="Next_food" id="button"></button></form>
+    </div>
+
+
+{% endblock %}

@@ -1,0 +1,66 @@
+#content-main {
+ width: 80%;
+ height: 100%;
+ margin: 0 auto;
+ padding: 2%;
+}
+
+html {
+background-image: url("neco.jpg");
+ width: 100%;
+ height: 100%;
+ -webkit-background-size: cover;
+ -moz-background-size: cover;
+ -o-background-size: cover;
+ background-size: cover;
+ background-repeat: no-repeat;
+}
+
+.food_print {
+ text-align: left;
+}
+
+h1 {
+ text-align: center;
+ font-size: 50px;
+ color: black;
+}
+
+form {
+ text-align: left;
+}
+
+p {
+ font-size: xx-large;
+}
+
+a {
+ font-size: xx-large;
+ color: black;
+ text-decoration: none;
+}
+
+a:hover {
+ font-size: xx-large;
+ color: forestgreen;
+}
+
+form {
+ text-align: center;
+}
+
+#button {
+ background-image: url("nextfood.png");
+ background-size: contain;
+ background-repeat: no-repeat;
+ width: 300px;
+ height: 140px;
+ padding: 2%;
+
+}
+
+#content {
+ background-color: hsla(248, 100%, 98%, 0.7);
+ padding: 5px;
+}
+
