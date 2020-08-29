@@ -4,7 +4,8 @@ from collections import namedtuple
 import requests
 from bs4 import BeautifulSoup
 
-cbookquery_n = 'https://www.recepty.cz/vyhledavani/pokrocile?showResults=1&rating=3&mess=2&catalog%5B0%5D=541&catalog' \
+# variables
+cbookquery_n = 'vyhledavani/pokrocile?showResults=1&rating=3&mess=2&catalog%5B0%5D=541&catalog' \
                '%5B1%5D=543&catalog%5B2%5D=544&catalog%5B3%5D=545&catalog%5B4%5D=542&catalog%5B5%5D=546&catalog%5B6' \
                '%5D=547&catalog%5B7%5D=654&catalog%5B8%5D=660&catalog%5B9%5D=662&catalog%5B10%5D=664&catalog%5B11%5D' \
                '=670&catalog%5B12%5D=655&catalog%5B13%5D=656&catalog%5B14%5D=657&catalog%5B15%5D=659&catalog%5B16%5D' \
@@ -12,15 +13,13 @@ cbookquery_n = 'https://www.recepty.cz/vyhledavani/pokrocile?showResults=1&ratin
                '=724&catalog%5B22%5D=740&catalog%5B23%5D=715&catalog%5B24%5D=717&catalog%5B25%5D=718&catalog%5B26%5D' \
                '=719&catalog%5B27%5D=720&catalog%5B28%5D=722&catalog%5B29%5D=730&catalog%5B30%5D=741&catalog%5B31%5D' \
                '=738&catalog%5B32%5D=739&catalog%5B33%5D=755&catalog%5B34%5D=765&catalog%5B35%5D=774 '
-
-# variables
 base_web = "https://www.recepty.cz/"
 unfound_list = []
 
 
 def get_links():
     link_list = []
-    r = requests.get(cbookquery_n)
+    r = requests.get(base_web + cbookquery_n)
     soup = BeautifulSoup(r.content, "lxml")
 
     recipies = soup.find_all('a', class_='loading-placeholder', href=True)
@@ -142,6 +141,16 @@ def get_price(ingredients_link):
     return jidlo(', '.join(ingredienc_output), round(price_total), food_name, ingredients_link, ', '.join(unfound_list))
 
 
+def rock():
+    vid_count = []
+    r = requests.get('https://www.tiktok.com/therock')
+    soup = BeautifulSoup(r.content, "lxml")
+    views = soup.find_all('strong[class*="video-count"]')
+    for view in views:
+        vid_count.append(view.text)
+    print(vid_count)
+
+
 def run(link):
     polozka = get_price(link)
     print('Jmeno: ' + polozka.name)
@@ -154,4 +163,6 @@ def run(link):
     print(polozka.link)
 
 
-run("https://www.recepty.cz//recept/kureci-kousky-v-syrovem-testicku-2435")
+# run("https://www.recepty.cz//recept/kureci-kousky-v-syrovem-testicku-2435")
+
+rock()
